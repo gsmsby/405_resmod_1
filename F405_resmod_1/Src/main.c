@@ -415,29 +415,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     	uint16_t  hundred_nano_delay =0;
     	uint16_t temp1=0;
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_RESET);
-    	Delay_few_nano();
+    	//Delay_few_nano();
+    	asm("NOP");
     	LL_SPI_TransmitData16(SPI3, sine_in_flash_array_bulat[index_of_sine_array_bulat] );
     	index_of_sine_array_bulat++;
 
     	while (LL_SPI_IsActiveFlag_BSY(SPI3) )
     	{
     	}
-
-    	/*while (LL_SPI_IsActiveFlag_TXE(SPI3) == 0 )
-    	{
-    	}*/
-//    	while (hundred_nano_delay < 9)
-//    	{
-//    		hundred_nano_delay++;
-//    	}
+    	asm("NOP");
     	//Delay_few_nano();
-    	Delay_few_nano();
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_SET);
 
     	if (index_of_sine_array_bulat == 100)
     	    index_of_sine_array_bulat = 0;
 
     	//adc
+    	//first CNV pulse for both I & V   --- I first
+    	//HAL_GPIO_WritePin(GPIOA,I_ADC_CNV_Pin , GPIO_PIN_SET);
+    	//create delay 3us conversion time or polling BUSY pin
+    	asm("NOP");
+
 
 
 		//HAL_GPIO_TogglePin(GPIOA, I_PGA_G0_Pin); //just a debuggin gindicator
