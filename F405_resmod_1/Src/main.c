@@ -110,23 +110,19 @@ int main(void)
   HAL_GPIO_WritePin(AD5541__CS_GPIO_Port, AD5541__CS_Pin, GPIO_PIN_SET);
   LL_SPI_Enable(SPI3);//dac spi enable
 
+  //pga currente gain 32
   HAL_GPIO_WritePin(GPIOB, I_PGA_G3_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOB, I_PGA_G2_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(GPIOB, I_PGA_G1_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(GPIOB, I_PGA_G0_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(GPIOB, I_PGA_G4_Pin, GPIO_PIN_RESET);
 
-//  HAL_GPIO_WritePin(GPIOC, V_PGA_G3_Pin, GPIO_PIN_RESET);
-//  HAL_GPIO_WritePin(GPIOC, V_PGA_G2_Pin, GPIO_PIN_SET);
-//  HAL_GPIO_WritePin(GPIOB, V_PGA_G1_Pin, GPIO_PIN_SET);
-//  HAL_GPIO_WritePin(GPIOB, V_PGA_G0_Pin, GPIO_PIN_SET);
-//  HAL_GPIO_WritePin(GPIOC, V_PGA_G4_Pin, GPIO_PIN_RESET);
-
+  //pga voltage gain 32
   HAL_GPIO_WritePin(GPIOC, V_PGA_G3_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOC, V_PGA_G2_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOB, V_PGA_G1_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOB, V_PGA_G0_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(GPIOC, V_PGA_G4_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, V_PGA_G2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, V_PGA_G1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, V_PGA_G0_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, V_PGA_G4_Pin, GPIO_PIN_RESET);
 
 
   HAL_TIM_Base_Start_IT(&htim3);
@@ -417,19 +413,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     if (htim3->Instance==TIM3) //check if the interrupt comes from TIM2
     {
     	uint16_t  hundred_nano_delay =0;
+    	uint16_t temp1=0;
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_RESET);
     	Delay_few_nano();
     	LL_SPI_TransmitData16(SPI3, sine_in_flash_array_bulat[index_of_sine_array_bulat] );
     	index_of_sine_array_bulat++;
-    	while (!LL_SPI_IsActiveFlag_TXE)
+    	while (LL_SPI_IsActiveFlag_TXE(SPI3) == 0 )
     	{
-
+    		//temp1 =9;
     	}
 //    	while (hundred_nano_delay < 9)
 //    	{
 //    		hundred_nano_delay++;
 //    	}
-
+    	Delay_few_nano();
+    	Delay_few_nano();
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_SET);
 
     	if (index_of_sine_array_bulat == 100)
