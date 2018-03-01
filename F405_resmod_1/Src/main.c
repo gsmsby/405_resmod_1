@@ -105,7 +105,29 @@ int main(void)
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
 
+
+
+  HAL_GPIO_WritePin(AD5541__CS_GPIO_Port, AD5541__CS_Pin, GPIO_PIN_SET);
   LL_SPI_Enable(SPI3);//dac spi enable
+
+  HAL_GPIO_WritePin(GPIOB, I_PGA_G3_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOB, I_PGA_G2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, I_PGA_G1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, I_PGA_G0_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, I_PGA_G4_Pin, GPIO_PIN_RESET);
+
+//  HAL_GPIO_WritePin(GPIOC, V_PGA_G3_Pin, GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(GPIOC, V_PGA_G2_Pin, GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(GPIOB, V_PGA_G1_Pin, GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(GPIOB, V_PGA_G0_Pin, GPIO_PIN_SET);
+//  HAL_GPIO_WritePin(GPIOC, V_PGA_G4_Pin, GPIO_PIN_RESET);
+
+  HAL_GPIO_WritePin(GPIOC, V_PGA_G3_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOC, V_PGA_G2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, V_PGA_G1_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, V_PGA_G0_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, V_PGA_G4_Pin, GPIO_PIN_RESET);
+
 
   HAL_TIM_Base_Start_IT(&htim3);
 
@@ -136,50 +158,63 @@ int main(void)
 void SystemClock_Config(void)
 {
 
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+	 RCC_OscInitTypeDef RCC_OscInitStruct;
+	  RCC_ClkInitTypeDef RCC_ClkInitStruct;
 
-    /**Configure the main internal regulator output voltage 
-    */
-  __HAL_RCC_PWR_CLK_ENABLE();
+	    //*Configure the main internal regulator output voltage
 
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
 
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	   // *Initializes the CPU, AHB and APB busses clocks
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+	  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	  RCC_OscInitStruct.HSICalibrationValue = 16;
+	  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+	  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+	  RCC_OscInitStruct.PLL.PLLM = 8;
+	  RCC_OscInitStruct.PLL.PLLN = 80;
+	  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+	  RCC_OscInitStruct.PLL.PLLQ = 4;
+	  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+	  {
+	    _Error_Handler(__FILE__, __LINE__);
+	  }
 
-    /**Configure the Systick interrupt time 
-    */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+	 //   *Initializes the CPU, AHB and APB busses clocks
 
-    /**Configure the Systick 
-    */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+	  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+	                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+	  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+	  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+	  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
+	  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+	  {
+	    _Error_Handler(__FILE__, __LINE__);
+	  }
+
+	    /**Configure the main internal regulator output voltage
+	    */
+	  if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1) != HAL_OK)
+	  {
+	    _Error_Handler(__FILE__, __LINE__);
+	  }
+
+	  //__HAL_RCC_PWR_CLK_ENABLE();
+
+	  //__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+	  //  *Configure the Systick interrupt time
+
+	  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+
+	 //   *Configure the Systick
+
+	  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
+
+	 //  SysTick_IRQn interrupt configuration
+	  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* SPI2 init function */
@@ -202,7 +237,7 @@ static void MX_SPI2_Init(void)
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_6;
   LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
@@ -216,11 +251,11 @@ static void MX_SPI2_Init(void)
   /* SPI2 parameter configuration*/
   SPI_InitStruct.TransferDirection = LL_SPI_SIMPLEX_RX;
   SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
-  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
+  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_16BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 10;
@@ -251,23 +286,24 @@ static void MX_SPI3_Init(void)
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_6;
+  //GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
   LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /* SPI3 parameter configuration*/
   SPI_InitStruct.TransferDirection = LL_SPI_HALF_DUPLEX_TX;
   SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
-  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_8BIT;
+  SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_16BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 10;
   LL_SPI_Init(SPI3, &SPI_InitStruct);
 
   LL_SPI_SetStandard(SPI3, LL_SPI_PROTOCOL_MOTOROLA);
-
+  //LL_SPI_DisableNSSPulseMgt(SPI3);
 }
 
 /* TIM3 init function */
@@ -281,6 +317,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 800;
+ // htim3.Init.Period = 4000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
@@ -379,18 +416,24 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
 {
     if (htim3->Instance==TIM3) //check if the interrupt comes from TIM2
     {
+    	uint16_t  hundred_nano_delay =0;
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_RESET);
     	Delay_few_nano();
     	LL_SPI_TransmitData16(SPI3, sine_in_flash_array_bulat[index_of_sine_array_bulat] );
     	index_of_sine_array_bulat++;
     	Delay_few_nano();
+    	while (hundred_nano_delay < 9)
+    	{
+    		//Delay_few_nano();
+    		hundred_nano_delay++;
+    	}
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_SET);
 
     	if (index_of_sine_array_bulat == 100)
     	    index_of_sine_array_bulat = 0;
 
 
-		//HAL_GPIO_TogglePin(GPIOC, I_GAIn_g2_Toggle_Pin); //just a debuggin gindicator
+		//HAL_GPIO_TogglePin(GPIOA, I_PGA_G0_Pin); //just a debuggin gindicator
     }
 }
 
@@ -399,8 +442,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
 void Delay_few_nano()
 {
 	int counter_nano = 0;
-	while (counter_nano++ < 10)
-	{}
+	while (counter_nano < 1)
+	{
+		counter_nano++;
+
+	}
 
 
 }
