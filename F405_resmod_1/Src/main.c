@@ -233,7 +233,7 @@ static void MX_SPI2_Init(void)
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_6;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
   LL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
@@ -299,7 +299,7 @@ static void MX_SPI3_Init(void)
   LL_SPI_Init(SPI3, &SPI_InitStruct);
 
   LL_SPI_SetStandard(SPI3, LL_SPI_PROTOCOL_MOTOROLA);
-  //LL_SPI_DisableNSSPulseMgt(SPI3);
+
 }
 
 /* TIM3 init function */
@@ -418,20 +418,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     	Delay_few_nano();
     	LL_SPI_TransmitData16(SPI3, sine_in_flash_array_bulat[index_of_sine_array_bulat] );
     	index_of_sine_array_bulat++;
-    	while (LL_SPI_IsActiveFlag_TXE(SPI3) == 0 )
+
+    	while (LL_SPI_IsActiveFlag_BSY(SPI3) )
     	{
-    		//temp1 =9;
     	}
+
+    	/*while (LL_SPI_IsActiveFlag_TXE(SPI3) == 0 )
+    	{
+    	}*/
 //    	while (hundred_nano_delay < 9)
 //    	{
 //    		hundred_nano_delay++;
 //    	}
-    	Delay_few_nano();
+    	//Delay_few_nano();
     	Delay_few_nano();
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_SET);
 
     	if (index_of_sine_array_bulat == 100)
     	    index_of_sine_array_bulat = 0;
+
+    	//adc
 
 
 		//HAL_GPIO_TogglePin(GPIOA, I_PGA_G0_Pin); //just a debuggin gindicator
