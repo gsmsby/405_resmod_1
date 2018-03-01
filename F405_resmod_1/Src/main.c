@@ -421,12 +421,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     	Delay_few_nano();
     	LL_SPI_TransmitData16(SPI3, sine_in_flash_array_bulat[index_of_sine_array_bulat] );
     	index_of_sine_array_bulat++;
-    	Delay_few_nano();
-    	while (hundred_nano_delay < 9)
+    	while (!LL_SPI_IsActiveFlag_TXE)
     	{
-    		//Delay_few_nano();
-    		hundred_nano_delay++;
+
     	}
+//    	while (hundred_nano_delay < 9)
+//    	{
+//    		hundred_nano_delay++;
+//    	}
+
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_SET);
 
     	if (index_of_sine_array_bulat == 100)
