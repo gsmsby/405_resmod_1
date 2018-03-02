@@ -51,6 +51,9 @@ TIM_HandleTypeDef htim3;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 int index_of_sine_array_bulat=0;
+int index_I_dt =0;
+
+int32_t I_dt[1000];
 
 
 /* USER CODE END PV */
@@ -110,11 +113,13 @@ int main(void)
   HAL_GPIO_WritePin(AD5541__CS_GPIO_Port, AD5541__CS_Pin, GPIO_PIN_SET);
   LL_SPI_Enable(SPI3);//dac spi enable
 
-  //pga currente gain 32
+  LL_SPI_Enable(SPI2);//I_adcc spi enable
+
+  //pga currente gain 64
   HAL_GPIO_WritePin(GPIOB, I_PGA_G3_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(GPIOB, I_PGA_G2_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOB, I_PGA_G1_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(GPIOB, I_PGA_G0_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, I_PGA_G2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, I_PGA_G1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, I_PGA_G0_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(GPIOB, I_PGA_G4_Pin, GPIO_PIN_RESET);
 
   //pga voltage gain 32
@@ -245,7 +250,8 @@ static void MX_SPI2_Init(void)
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* SPI2 parameter configuration*/
-  SPI_InitStruct.TransferDirection = LL_SPI_SIMPLEX_RX;
+  SPI_InitStruct.TransferDirection =LL_SPI_FULL_DUPLEX;
+  //SPI_InitStruct.TransferDirection = LL_SPI_SIMPLEX_RX;
   SPI_InitStruct.Mode = LL_SPI_MODE_MASTER;
   SPI_InitStruct.DataWidth = LL_SPI_DATAWIDTH_16BIT;
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
@@ -312,7 +318,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 800;
+  htim3.Init.Period = 1600;
  // htim3.Init.Period = 4000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -414,6 +420,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     {
     	uint16_t  hundred_nano_delay =0;
     	uint16_t temp1=0;
+    	int16_t I_temp_dt;
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_RESET);
     	//Delay_few_nano();
     	asm("NOP");
@@ -430,11 +437,50 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     	if (index_of_sine_array_bulat == 100)
     	    index_of_sine_array_bulat = 0;
 
+
     	//adc
     	//first CNV pulse for both I & V   --- I first
-    	//HAL_GPIO_WritePin(GPIOA,I_ADC_CNV_Pin , GPIO_PIN_SET);
+    	HAL_GPIO_WritePin(GPIOA,I_ADC_CNV_Pin , GPIO_PIN_SET);
     	//create delay 3us conversion time or polling BUSY pin
     	asm("NOP");
+    	asm("NOP"); //tCNVH of page 4 -min 20ns  (each NO is 12.5 for 80Mhz clock, so total 25ns delay)
+
+    	while(HAL_GPIO_ReadPin(GPIOC, I_ADC_BUSYF_Pin))	//conv done ?
+    	{}
+    	asm("NOP"); //dtsheet 5ns max
+
+    	HAL_GPIO_WritePin(GPIOA,I_ADC_CNV_Pin , GPIO_PIN_RESET);
+    	while (LL_SPI_IsActiveFlag_RXNE(SPI2))
+    	{
+    		(void)LL_SPI_ReceiveData16(SPI2);      // flush any FIFO content
+    	}
+
+
+    	LL_SPI_TransmitData16(SPI2, 0xFFff);   // send dummy byte
+    	while (LL_SPI_IsActiveFlag_BSY(SPI2) )
+    	{
+    	}
+    	asm("NOP");
+    	while (!LL_SPI_IsActiveFlag_RXNE(SPI2))
+    	{
+
+    	}
+
+
+
+    	while (!LL_SPI_IsActiveFlag_TXE(SPI2))
+    	{
+    		;
+    	}
+    	I_temp_dt =LL_SPI_ReceiveData16(SPI2);;
+    	I_dt[index_I_dt++] = I_temp_dt;
+    	if (index_I_dt == 1000)
+    	{
+    		index_I_dt = 0;
+    		temp1= 11;
+    	}
+
+    	temp1=9;
 
 
 
