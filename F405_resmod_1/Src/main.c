@@ -53,7 +53,7 @@ TIM_HandleTypeDef htim3;
 int index_of_sine_array_bulat=0;
 int index_I_dt =0;
 
-int32_t I_dt[1000];
+int32_t I_dt[10000];
 
 
 /* USER CODE END PV */
@@ -257,7 +257,7 @@ static void MX_SPI2_Init(void)
   SPI_InitStruct.ClockPolarity = LL_SPI_POLARITY_LOW;
   SPI_InitStruct.ClockPhase = LL_SPI_PHASE_1EDGE;
   SPI_InitStruct.NSS = LL_SPI_NSS_SOFT;
-  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV4;
+  SPI_InitStruct.BaudRate = LL_SPI_BAUDRATEPRESCALER_DIV2;
   SPI_InitStruct.BitOrder = LL_SPI_MSB_FIRST;
   SPI_InitStruct.CRCCalculation = LL_SPI_CRCCALCULATION_DISABLE;
   SPI_InitStruct.CRCPoly = 10;
@@ -318,7 +318,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 0;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1600;
+  htim3.Init.Period = 800;
  // htim3.Init.Period = 4000;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -421,24 +421,23 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     	uint16_t  hundred_nano_delay =0;
     	uint16_t temp1=0;
     	int16_t I_temp_dt;
+
+    	//dac
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_RESET);
-    	//Delay_few_nano();
     	asm("NOP");
     	LL_SPI_TransmitData16(SPI3, sine_in_flash_array_bulat[index_of_sine_array_bulat] );
     	index_of_sine_array_bulat++;
 
     	while (LL_SPI_IsActiveFlag_BSY(SPI3) )
-    	{
-    	}
+    	{    	}
     	asm("NOP");
-    	//Delay_few_nano();
     	HAL_GPIO_WritePin(GPIOA, AD5541__CS_Pin, GPIO_PIN_SET);
 
     	if (index_of_sine_array_bulat == 100)
     	    index_of_sine_array_bulat = 0;
 
 
-    	//adc
+   	//adc
     	//first CNV pulse for both I & V   --- I first
     	HAL_GPIO_WritePin(GPIOA,I_ADC_CNV_Pin , GPIO_PIN_SET);
     	//create delay 3us conversion time or polling BUSY pin
@@ -474,17 +473,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim3)
     	}
     	I_temp_dt =LL_SPI_ReceiveData16(SPI2);;
     	I_dt[index_I_dt++] = I_temp_dt;
-    	if (index_I_dt == 1000)
+    	if (index_I_dt == 10000)
     	{
     		index_I_dt = 0;
-    		temp1= 11;
     	}
 
     	temp1=9;
-
-
-
-		//HAL_GPIO_TogglePin(GPIOA, I_PGA_G0_Pin); //just a debuggin gindicator
     }
 }
 
